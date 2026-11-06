@@ -48,58 +48,61 @@ const cityNameMap = {
     "Okinawa": "沖縄県"
 };
 
-const MAX_HISTORY = 5; // 保存する最大履歴件数
+const MAX_HISTORY = 5; //[cite: 1, 2]
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Enterキー対応
     document.getElementById("city").addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
             getWeather();
         }
     });
-
-    // ページロード時に過去の履歴を表示
     renderHistory();
 });
 
-// 天気テーマ取得
-function getWeatherThemeClass(conditionText, code) {
-    const text = conditionText.toLowerCase();
+// 天気の状態に応じたクラスを正確に返す関数
+function getWeatherThemeClass(conditionText) {
+    const text = conditionText ? conditionText.toLowerCase() : "";
 
     if (text.includes("晴") || text.includes("快晴") || text.includes("sunny") || text.includes("clear")) {
         return "weather-sunny";
-    } else if (text.includes("雨") || text.includes("rain") || text.includes("drizzle") || text.includes("しぐれ")) {
+    } 
+    if (text.includes("雨") || text.includes("rain") || text.includes("drizzle") || text.includes("しぐれ") || text.includes("シャワー")) {
         return "weather-rainy";
-    } else if (text.includes("雪") || text.includes("snow") || text.includes("みぞれ") || text.includes("sleet")) {
+    } 
+    if (text.includes("雪") || text.includes("snow") || text.includes("みぞれ") || text.includes("sleet")) {
         return "weather-snowy";
-    } else if (text.includes("雷") || text.includes("thunder")) {
+    } 
+    if (text.includes("雷") || text.includes("thunder")) {
         return "weather-thunder";
-    } else if (text.includes("曇") || text.includes("雲") || text.includes("cloud") || text.includes("overcast") || text.includes("霧") || text.includes("mist") || text.includes("fog")) {
+    } 
+    if (text.includes("曇") || text.includes("くもり") || text.includes("雲") || text.includes("cloud") || text.includes("overcast") || text.includes("霧") || text.includes("mist") || text.includes("fog")) {
         return "weather-cloudy";
     }
     return "weather-default";
 }
 
-// 履歴の読み込み＆保存
 function getHistory() {
     return JSON.parse(localStorage.getItem("weather_history") || "[]");
 }
 
 function saveHistory(city, displayName) {
     let history = getHistory();
-    // 重複を削除して先頭に追加
     history = history.filter(item => item.city.toLowerCase() !== city.toLowerCase());
     history.unshift({ city: city, name: displayName });
     
     if (history.length > MAX_HISTORY) {
-        history.pop();
+        history.pop(); //[cite: 1, 2]
     }
 
     localStorage.setItem("weather_history", JSON.stringify(history));
     renderHistory();
 }
 
-// 履歴タグの描画
+function clearHistory() {
+    localStorage.removeItem("weather_history");
+    renderHistory();
+}
+
 function renderHistory() {
     const history = getHistory();
     const historySection = document.getElementById("history-section");
@@ -125,7 +128,6 @@ function renderHistory() {
     });
 }
 
-// フォームとカードを初期状態に戻す
 function resetAll() {
     const cityInput = document.getElementById("city");
     const weatherDiv = document.getElementById("weather");
@@ -135,7 +137,7 @@ function resetAll() {
     weatherDiv.innerHTML = "";
     weatherDiv.className = "";
     weatherDiv.style.display = "none";
-    resetBtn.style.display = "none"; // リセット時にボタンを隠す
+    resetBtn.style.display = "none";
 }
 
 async function getWeather(targetCity = null) {
@@ -147,20 +149,17 @@ async function getWeather(targetCity = null) {
 
     const city = targetCity || cityInput.value.trim();
 
-    // 検索実行後なのでリセットボタンを表示
     resetBtn.style.display = "inline-block";
-
-    weatherDiv.className = "";
-    weatherDiv.style.display = "inline-block";
+    weatherDiv.style.display = "block";
 
     if (!city) {
-        weatherDiv.classList.add("plain-card");
+        weatherDiv.className = "plain-card";
         weatherDiv.innerHTML = `<p class="error-message">都市名を入力してください（例: Tokyo）</p>`;
         return;
     }
 
-    // ローディング表示
-    weatherDiv.classList.add("plain-card");
+    // ローディング中
+    weatherDiv.className = "plain-card";
     searchBtn.disabled = true;
     searchBtn.textContent = "取得中...";
     weatherDiv.innerHTML = `<p style="color: #666; margin: 0;">天気を取得しています...</p>`;
@@ -177,11 +176,11 @@ async function getWeather(targetCity = null) {
         const englishName = data.location.name;
         const japaneseName = cityNameMap[englishName] || englishName; 
 
-        // 検索成功したら履歴に保存
         saveHistory(city, japaneseName);
 
-        // テーマカラー適用
-        const themeClass = getWeatherThemeClass(data.current.condition.text, data.current.condition.code);
+        // 既存のクラスをリセットしてから、新しいテーマクラスを確実に付与
+        weatherDiv.className = "";
+        const themeClass = getWeatherThemeClass(data.current.condition.text);
         weatherDiv.classList.add(themeClass);
 
         weatherDiv.innerHTML = `
@@ -197,11 +196,10 @@ async function getWeather(targetCity = null) {
             </div>
         `;
 
-        // 入力フォームのクリア
         cityInput.value = "";
 
     } catch (error) {
-        weatherDiv.classList.add("plain-card");
+        weatherDiv.className = "plain-card";
         weatherDiv.innerHTML = `<p class="error-message">${error.message}</p>`;
     } finally {
         searchBtn.disabled = false;

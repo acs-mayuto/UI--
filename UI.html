@@ -44,7 +44,6 @@
             box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
         }
 
-        /* 天気取得ボタン */
         #search-btn {
             padding: 0.6em 1.4em;
             font-size: 1em;
@@ -70,7 +69,6 @@
             transform: none;
         }
 
-        /* リセットボタン (初期状態は非表示) */
         #reset-btn {
             display: none;
             padding: 0.6em 1em;
@@ -96,16 +94,36 @@
             line-height: 1.4em;
         }
 
-        /* 検索履歴エリア */
         #history-section {
             margin-top: 1.5em;
-            display: none; /* 履歴がある時のみ表示 */
+            display: none;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.5em;
         }
 
         .history-title {
             font-size: 0.9em;
             color: #7f8c8d;
-            margin-bottom: 0.5em;
+        }
+
+        .clear-history-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            font-size: 0.8em;
+            cursor: pointer;
+            padding: 0;
+            text-decoration: underline;
+        }
+
+        .clear-history-btn:hover {
+            color: #c0392b;
         }
 
         .history-list {
@@ -146,38 +164,40 @@
             max-width: 340px;
             box-sizing: border-box;
             text-align: center;
+            margin-left: auto;
+            margin-right: auto;
             transition: background 0.5s ease, box-shadow 0.5s ease;
         }
 
-        /* --- 天気テーマ別のカラー設定 --- */
+        /* 天気テーマ別のカラー（詳細なキーワードに対応） */
         #weather.weather-sunny {
-            background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+            background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%) !important;
             box-shadow: 0 10px 25px rgba(255, 126, 95, 0.4);
         }
 
         #weather.weather-rainy {
-            background: linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%);
+            background: linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%) !important;
             box-shadow: 0 10px 25px rgba(58, 123, 213, 0.4);
         }
 
         #weather.weather-cloudy {
-            background: linear-gradient(135deg, #757f9a 0%, #d7dde8 100%);
+            background: linear-gradient(135deg, #757f9a 0%, #d7dde8 100%) !important;
             box-shadow: 0 10px 25px rgba(117, 127, 154, 0.4);
         }
 
         #weather.weather-snowy {
-            background: linear-gradient(135deg, #83a4d4 0%, #b6fbff 100%);
+            background: linear-gradient(135deg, #83a4d4 0%, #b6fbff 100%) !important;
             box-shadow: 0 10px 25px rgba(131, 164, 212, 0.4);
             color: #2c3e50;
         }
 
         #weather.weather-thunder {
-            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%) !important;
             box-shadow: 0 10px 25px rgba(24, 40, 72, 0.5);
         }
 
         #weather.weather-default {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
             box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
         }
 
@@ -275,13 +295,14 @@
         その場合は <strong>Mie, Japan</strong> のように国名も含めて入力してください。
     </p>
 
-    <!-- 過去の検索履歴表示エリア -->
     <div id="history-section">
-        <div class="history-title">🕒 最近検索した都市（クリックで再検索）</div>
+        <div class="history-header">
+            <span class="history-title">🕒 最近検索した都市</span>
+            <button class="clear-history-btn" onclick="clearHistory()">履歴をクリア</button>
+        </div>
         <div class="history-list" id="history-list"></div>
     </div>
 
-    <!-- 結果表示カード -->
     <div id="weather"></div>
 
     <script src="UI.js"></script>
