@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>都道府県別 天気情報</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Roboto, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            padding: 2em;
+            text-align: center;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 1em;
+            color: #2c3e50;
+        }
+
+        .search-box {
+            display: inline-flex;
+            justify-content: center;
+            gap: 0.5em;
+            max-width: 100%;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            padding: 0.6em 1em;
+            font-size: 1em;
+            width: 230px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+        }
+
+        /* 天気取得ボタン */
+        #search-btn {
+            padding: 0.6em 1.4em;
+            font-size: 1em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        #search-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        #search-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* リセットボタン (初期状態は非表示) */
+        #reset-btn {
+            display: none;
+            padding: 0.6em 1em;
+            font-size: 1em;
+            font-weight: bold;
+            background: #e0e6ed;
+            color: #666;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #reset-btn:hover {
+            background: #d0d7de;
+            color: #333;
+        }
+
+        .note {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 0.8em;
+            line-height: 1.4em;
+        }
+
+        /* 検索履歴エリア */
+        #history-section {
+            margin-top: 1.5em;
+            display: none; /* 履歴がある時のみ表示 */
+        }
+
+        .history-title {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 0.5em;
+        }
+
+        .history-list {
+            display: flex;
+            justify-content: center;
+            gap: 0.5em;
+            flex-wrap: wrap;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .history-chip {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 0.4em 0.8em;
+            border-radius: 20px;
+            font-size: 0.85em;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .history-chip:hover {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        /* 天気カード共通スタイル */
+        #weather {
+            display: none;
+            color: white;
+            border-radius: 20px;
+            padding: 2em 1.5em;
+            margin-top: 1.5em;
+            width: 100%;
+            max-width: 340px;
+            box-sizing: border-box;
+            text-align: center;
+            transition: background 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        /* --- 天気テーマ別のカラー設定 --- */
+        #weather.weather-sunny {
+            background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+            box-shadow: 0 10px 25px rgba(255, 126, 95, 0.4);
+        }
+
+        #weather.weather-rainy {
+            background: linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%);
+            box-shadow: 0 10px 25px rgba(58, 123, 213, 0.4);
+        }
+
+        #weather.weather-cloudy {
+            background: linear-gradient(135deg, #757f9a 0%, #d7dde8 100%);
+            box-shadow: 0 10px 25px rgba(117, 127, 154, 0.4);
+        }
+
+        #weather.weather-snowy {
+            background: linear-gradient(135deg, #83a4d4 0%, #b6fbff 100%);
+            box-shadow: 0 10px 25px rgba(131, 164, 212, 0.4);
+            color: #2c3e50;
+        }
+
+        #weather.weather-thunder {
+            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            box-shadow: 0 10px 25px rgba(24, 40, 72, 0.5);
+        }
+
+        #weather.weather-default {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
+        }
+
+        #weather.plain-card {
+            background: white !important;
+            color: #333 !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+        }
+
+        #weather h2 {
+            margin: 0 0 0.2em 0;
+            font-size: 1.5em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .icon-container {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            margin: 0.8em auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        #weather img {
+            width: 64px;
+            height: 64px;
+        }
+
+        .temp {
+            font-size: 2.8em;
+            font-weight: 800;
+            margin: 0.1em 0;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .condition {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 1.2em;
+            letter-spacing: 0.05em;
+        }
+
+        .weather-details {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            padding-top: 1.2em;
+            margin-top: 0.5em;
+        }
+
+        .detail-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5em 0.8em;
+            border-radius: 20px;
+            font-size: 0.85em;
+            backdrop-filter: blur(5px);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .search-box {
+                flex-direction: column;
+                align-items: center;
+            }
+            input[type="text"], #search-btn, #reset-btn {
+                width: 100%;
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🌟 お天気チェッカー 🌟</h1>
+    
+    <div class="search-box">
+        <input type="text" id="city" placeholder="都市名を入力（例: Tokyo）" />
+        <button id="search-btn" onclick="getWeather()">天気を取得</button>
+        <button id="reset-btn" onclick="resetAll()">リセット</button>
+    </div>
+
+    <p class="note">
+        ※ 一部の地名（例：<strong>Mie</strong>、<strong>Saga</strong>）は誤認識される場合があります。<br>
+        その場合は <strong>Mie, Japan</strong> のように国名も含めて入力してください。
+    </p>
+
+    <!-- 過去の検索履歴表示エリア -->
+    <div id="history-section">
+        <div class="history-title">🕒 最近検索した都市（クリックで再検索）</div>
+        <div class="history-list" id="history-list"></div>
+    </div>
+
+    <!-- 結果表示カード -->
+    <div id="weather"></div>
+
+    <script src="UI.js"></script>
+</body>
+</html>
