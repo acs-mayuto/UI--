@@ -115,7 +115,7 @@ const cityNameMap = {
     "okinawa": "沖縄県"
 };
 
-const MAX_HISTORY = 5; // 最大5件まで保存[cite: 1, 2]
+const MAX_HISTORY = 5; // 最大5件まで保存
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("city").addEventListener("keypress", function(event) {
@@ -158,7 +158,7 @@ function saveHistory(city, displayName) {
     history.unshift({ city: city, name: displayName });
     
     if (history.length > MAX_HISTORY) {
-        history.pop(); //[cite: 1, 2]
+        history.pop();
     }
 
     localStorage.setItem("weather_history", JSON.stringify(history));
@@ -243,29 +243,21 @@ async function getWeather(targetCity = null) {
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            throw new Error("指定された都市が見つかりませんでした。<br>英語表記または「都市名, Japan」でお試しください。");
+            throw new Error("指定された都市が見つかりませんでした。<br>誤字や非対応の表記がないか確認し、正しい都市名でお試しください。");
         }
 
         const data = await response.json();
         const englishName = data.location.name.trim();
         const cleanEnglishKey = englishName.toLowerCase();
 
-        // 2. 日本語化の優先順位付け：
-        // ① ユーザーが最初に入力した文字が日本語（漢字・かな）なら、それをベースにするのが一番確実
-        // ② 次にAPIの返却値をマップで変換
-        // ③ どれにも当たらなければAPIの英語名を使う
         let japaneseName = "";
         
         if (/[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uffef\u4e00-\u9faf]/.test(rawCity)) {
-            // ユーザーが日本語で入力していた場合、余計な「, Japan」などを除いた綺麗なお名前を採用
             japaneseName = rawCity.replace(/,?\s*Japan/i, "").trim();
-            // もし「徳島」などと入力されていたら「徳島県」のように「県」や「府」「都」がなければ補うとより綺麗になりますが、そのまま表示
         } else {
-            // ローマ字や英語で入力された場合
             japaneseName = cityNameMap[cleanEnglishKey] || data.location.region || englishName;
         }
 
-        // 履歴には綺麗な日本語名を保存
         saveHistory(rawCity, japaneseName);
 
         // テーマカラー適用

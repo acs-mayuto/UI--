@@ -87,6 +87,20 @@
             color: #333;
         }
 
+        .note {
+            font-size: 0.85em;
+            color: #555;
+            background: #ffffff;
+            border: 1px solid #dce4ec;
+            border-radius: 12px;
+            padding: 0.8em 1.2em;
+            margin: 1em auto 0;
+            max-width: 440px;
+            line-height: 1.6em;
+            text-align: left;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
         #history-section {
             margin-top: 1.5em;
             display: none;
@@ -259,6 +273,7 @@
             color: #e74c3c;
             margin: 0;
             font-weight: bold;
+            line-height: 1.5em;
         }
 
         @media (max-width: 480px) {
@@ -268,6 +283,9 @@
             }
             input[type="text"], #search-btn, #reset-btn {
                 width: 100%;
+                max-width: 280px;
+            }
+            .note {
                 max-width: 280px;
             }
         }
@@ -283,6 +301,10 @@
         <button id="reset-btn" onclick="resetAll()">リセット</button>
     </div>
 
+    <p class="note">
+        ※ 存在しない地名や誤字（例：「あ」「加賀和」など）、外国語のカタカナ・ひらがな入力では正しい天気を取得できない場合があります。<br>
+        ※ 日本の都道府県・都市名（例：<strong>Tokyo</strong>、<strong>香川</strong>、<strong>Kagawa, Japan</strong>）を正しく入力してください。
+    </p>
 
     <div id="history-section">
         <div class="history-header">
